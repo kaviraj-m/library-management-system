@@ -1,0 +1,75 @@
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(255) UNIQUE,
+    name VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255),
+    role ENUM('student', 'staff', 'admin', 'incharge'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE TABLE students (
+    student_id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255),
+    department VARCHAR(255),
+    year INT,
+    registration_number VARCHAR(255) UNIQUE,
+    user_id VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+CREATE TABLE staff (
+    staff_id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255),
+    department VARCHAR(255),
+    years_of_service INT,
+    user_id VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+CREATE TABLE book_details (
+    book_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_name VARCHAR(255),
+    author VARCHAR(255),
+    edition VARCHAR(255),
+    publisher VARCHAR(255),
+    availability BOOLEAN DEFAULT TRUE,
+    reserved_by VARCHAR(255),
+    FOREIGN KEY (reserved_by) REFERENCES users(user_id) ON DELETE SET NULL
+);
+CREATE TABLE borrow_entries (
+    entry_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    user_id VARCHAR(255),
+    entry_date DATE,
+    due_date DATE,
+    returned BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (book_id) REFERENCES book_details(book_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+CREATE TABLE book_history (
+    history_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    user_id VARCHAR(255),
+    action ENUM('borrowed', 'returned', 'reserved'),
+    action_date DATE,
+    FOREIGN KEY (book_id) REFERENCES book_details(book_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+INSERT INTO users (user_id, name, email, password, role) VALUES
+('u123', 'John Doe', 'john@example.com', '$2a$10$abc', 'student'),
+('u124', 'Jane Smith', 'jane@example.com', '$2a$10$def', 'staff'),
+('u125', 'Admin User', 'admin@example.com', '$2a$10$ghi', 'admin'),
+('u126', 'In-Charge', 'incharge@example.com', '$2a$10$jkl', 'incharge');
+INSERT INTO students (student_id, name, department, year, registration_number, user_id) VALUES
+('s001', 'John Doe', 'Computer Science', 3, '2020101', 'u123');
+INSERT INTO staff (staff_id, name, department, years_of_service, user_id) VALUES
+('st001', 'Jane Smith', 'Physics', 5, 'u124');
+INSERT INTO book_details (book_name, author, edition, publisher, availability) VALUES
+('The Great Gatsby', 'F. Scott Fitzgerald', '1st', 'Scribner', TRUE),
+('To Kill a Mockingbird', 'Harper Lee', '1st', 'J.B. Lippincott & Co.', TRUE),
+('1984', 'George Orwell', '1st', 'Secker & Warburg', TRUE);
+INSERT INTO borrow_entries (book_id, user_id, entry_date, due_date, returned) VALUES
+(1, 'u123', '2024-09-01', '2024-09-08', FALSE),
+(2, 'u124', '2024-09-02', '2024-09-16', FALSE);
+INSERT INTO book_history (book_id, user_id, action, action_date) VALUES
+(1, 'u123', 'borrowed', '2024-09-01'),
+(2, 'u124', 'borrowed', '2024-09-02');
